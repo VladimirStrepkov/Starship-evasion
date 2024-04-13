@@ -1,0 +1,62 @@
+@font-face {
+    font-family: "Robotesqa4F";
+    font-style: normal;
+    font-weight: 400;
+    src: local("Robotesqa4F"),
+         url("../fonts/Robotesqa4F.woff") format("woff");
+}
+
+.game-tab {
+    position: relative;
+    height: 720px;
+    width: 1280px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 3px solid white;
+    /* Это чтобы нельзя было выделять объекты на странице   */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#gaming {
+    display: block;
+    margin: 0 auto;
+}
+
+body {
+    background-color: dimgrey;
+}
+
+.element-div {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+    margin-top: 40px;
+}
+
+.button  {
+    font-size: 60px;
+    border-radius: 10%;
+    font-family: "Robotesqa4F";
+}
+
+.title {
+    font-size: 50px;
+    font-family: "Robotesqa4F";
+}
+
+#rating-table {
+    width: 900px;
+    font-family: "Robotesqa4F";
+    font-size: 30px;
+    border: 3px solid #dddddd;
+}

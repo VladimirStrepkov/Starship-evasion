@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starship evasion</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="main-menu"       class="game-tab">
+        <div class="element-div"><h1 class="title">Starship evasion</h1></div>
+        <div class="element-div"><button id="continue-game-button" class="button">Продолжить</button></div>
+        <div class="element-div"><button id="new-game-button"      class="button">Новая игра</button></div>
+        <div class="element-div"><button id="rating-menu-button"   class="button">Рейтинг</button></div>
+    </div>
+
+    <div id="rating-menu"     class="game-tab">
+        <div class="element-div"><h1 class="title">Рейтинг</h1></div>
+        <div class="element-div">
+            <table id="rating-table">
+                <tr>
+                    <td>Игрок</td>
+                    <td>Рекорд</td>
+                </tr>
+                <tr>
+                    <td>Игрок1</td>
+                    <td>1:23</td>
+                </tr>
+                <tr>
+                    <td>Игрок2</td>
+                    <td>1:11</td>
+                </tr>
+                <tr>
+                    <td>Игрок3</td>
+                    <td>0:40</td>
+                </tr>
+                <tr>
+                    <td>Игрок4</td>
+                    <td>0:33</td>
+                </tr>
+                <tr>
+                    <td>Игрок5</td>
+                    <td>0:12</td>
+                </tr>
+            </table>
+        </div>
+        <div class="element-div"><button id="from-rating-to-main-menu-button" class="button">Главное меню</button></div>
+    </div>
+
+    <div id="mode-selection"  class="game-tab">
+        <div class="element-div"><h1 class="title">Выберите режим игры</h1></div>
+        <div class="element-div"><button id="standart-mode-button" class="button">Стандарт</button></div>
+        <div class="element-div"><button id="custom-mode-button" class="button">Свои настройки</button></div>
+        <div class="element-div"><button id ="from-mode-selection-to-main-menu-button" class="button">Назад</button></div>
+    </div>
+
+    <div id="change-settings" class="game-tab">
+        <div class="element-div"><h1 class="title">Свои настройки</h1></div>
+        <div class="element-div"><button id="start-custom-game-button" class="button">Начать</button></div>
+        <div class="element-div"><button id="from-change-settings-to-mode-selection-button" class="button">Назад</button></div>
+    </div>
+
+    <div id="pause-menu"      class="game-tab">
+        <div class="element-div"><h1 class="title">Пауза</h1></div>
+        <div class="element-div"><button id="resume-game-button" class="button">Продолжить</button></div>
+        <div class="element-div"><button id="save-and-out-button" class="button">Сохранить и выйти</button></div>
+    </div>
+
+    <canvas id="gaming" width="1280px" height="720px"></canvas>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
