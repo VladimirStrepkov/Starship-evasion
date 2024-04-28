@@ -9,6 +9,7 @@ let ratingMenu =     document.getElementById("rating-menu");
 let modeSelection =  document.getElementById("mode-selection");
 let changeSettings = document.getElementById("change-settings");
 let pauseMenu =      document.getElementById("pause-menu");
+let gameOverMenu =   document.getElementById("game-over-menu");
 
 // Холст на котором будет рисоваться игра
 let gaming =         document.getElementById("gaming");
@@ -31,12 +32,17 @@ let saveAndOutButton = document.getElementById("save-and-out-button");
 let startCustomGameButton = document.getElementById("start-custom-game-button");
 let fromChangeSettingsToModeSelectionButton = document.getElementById("from-change-settings-to-mode-selection-button");
 
+// Кнопки в меню конца игры
+let restartGameButton = document.getElementById("restart-game");
+let fromGameOverMenuToMainMenuButton = document.getElementById("from-game-over-menu-to-main-menu");
+
 // По умолчанию скрываем все блоки кроме главного меню
 ratingMenu.style.display =     'none';
 gaming.style.display =         'none';
 modeSelection.style.display =  'none';
 changeSettings.style.display = 'none';
 pauseMenu.style.display =      'none';
+gameOverMenu.style.display =   'none';
 
 // Заходим в меню рейтинга
 ratingMenuButton.onclick = function() {
@@ -71,71 +77,71 @@ const ctx = canvas.getContext('2d');
 
 // Класс всех игровых объектов
 class gameObject {
-    #x;
-    #y;
-    #width;
-    #height;
-    #image = new Image();
-    #speed;              // скорость движения
-    #directionVector;    // единичный вектор направления движения
+    x;
+    y;
+    width;
+    height;
+    image = new Image();
+    speed;              // скорость движения
+    directionVector;    // единичный вектор направления движения
 
-    constructor (x, y, width, height, image = null, speed = 0, directionVector = [0, 0]) {
-        this.#x = x;
-        this.#y = y;
-        this.#width = width;
-        this.#height = height;
-        if (image != null) this.#image.src = image;
-        this.#speed = speed;
-        this.#directionVector = directionVector;
-    }
-
-    get getXDirectionVector() {
-        return this.#directionVector[0];
-    }
-    get getYDirectionVector() {
-        return this.#directionVector[1];
-    }
-    set setXDirectionVector(value) {
-        this.#directionVector[0] = value;
-    }
-    set setYDirectionVector(value) {
-        this.#directionVector[1] = value;
+    constructor (x = 0, y = 0, width = 1, height = 1, image = null, speed = 0, directionVector = [0, 0]) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        if (image != null) this.image.src = image;
+        this.speed = speed;
+        this.directionVector = directionVector;
     }
 
-    get getSpeed() {
-        return this.#speed;
+    static getXDirectionVector(obj) {
+        return obj.directionVector[0];
     }
-    set setSpeed(value) {
-        this.#speed = value;
+    static getYDirectionVector(obj) {
+        return obj.directionVector[1];
     }
-
-    get getImage() {
-        return this.#image;
+    static setXDirectionVector(obj, value) {
+        obj.directionVector[0] = value;
     }
-    set setImage(value) {
-        this.#image.src = value;
-    }
-
-    get getX() {
-        return this.#x;
-    }
-    set setX(value) {
-        this.#x = value;
+    static setYDirectionVector(obj, value) {
+        obj.directionVector[1] = value;
     }
 
-    get getY() {
-        return this.#y;
+    static getSpeed(obj) {
+        return obj.speed;
     }
-    set setY(value) {
-        this.#y = value;
-    }
-
-    get getWidth() {
-        return this.#width;
+    static setSpeed(obj, value) {
+        obj.speed = value;
     }
 
-    get getHeight() {
-        return this.#height;
+    static getImage(obj) {
+        return obj.image;
+    }
+    static setImage(obj, value) {
+        obj.image.src = value;
+    }
+
+    static getX(obj) {
+        return obj.x;
+    }
+    static setX(obj, value) {
+        obj.x = value;
+    }
+
+    static getY(obj) {
+        return obj.y;
+    }
+    static setY(obj, value) {
+        obj.y = value;
+    }
+
+    static getWidth(obj) {
+        return obj.width;
+    }
+
+    static getHeight(obj) {
+        return obj.height;
     }
  
     // Проверка пересечения объектов по значениям их размеров и положения на плоскости
@@ -149,35 +155,38 @@ class gameObject {
 
     // Проверка пересечения объектов по ссылкам на них
     static linkRectIntersection(gameObject1, gameObject2) {
-        const x1 = gameObject1.getX
-        const y1 = gameObject1.getY
-        const w1 = gameObject1.getWidth
-        const h1 = gameObject1.getHeight
+        const x1 = gameObject.getX(gameObject1);
+        const y1 = gameObject.getY(gameObject1);
+        const w1 = gameObject.getWidth(gameObject1);
+        const h1 = gameObject.getHeight(gameObject1);
 
-        const x2 = gameObject2.getX
-        const y2 = gameObject2.getY
-        const w2 = gameObject2.getWidth
-        const h2 = gameObject2.getHeight
+        const x2 = gameObject.getX(gameObject2);
+        const y2 = gameObject.getY(gameObject2);
+        const w2 = gameObject.getWidth(gameObject2);
+        const h2 = gameObject.getHeight(gameObject2);
 
         return this.valuesRectIntersection(x1, y1, w1, h1, x2, y2, w2, h2);
     }
 
     // Движение объекта в зависимости от его направления
-    move() {
+    static move(obj) {
         // Находим модуль вектора направления объекта, округляем до сотых
-        let vectorModule = Math.round((this.getXDirectionVector ** 2 + this.getYDirectionVector ** 2) ** 0.5 * 100) / 100;
+        let vectorModule = Math.round((gameObject.getXDirectionVector(obj) ** 2 + gameObject.getYDirectionVector(obj) ** 2) ** 0.5 * 100) / 100;
         
         // Делим вектор на модуль чтобы нормализовать его (делаем вектор направления единичным), округляем до сотых
         if (vectorModule != 0) {
-            this.#directionVector[0] = Math.round(this.#directionVector[0] / vectorModule * 100) / 100;
-            this.#directionVector[1] = Math.round(this.#directionVector[1] / vectorModule * 100) / 100;
+            obj.directionVector[0] = Math.round(obj.directionVector[0] / vectorModule * 100) / 100;
+            obj.directionVector[1] = Math.round(obj.directionVector[1] / vectorModule * 100) / 100;
         }
 
         // Двигаем объект в направлении заданном единичным вектором направления со скоростью объекта
-        this.setX = this.getX + this.getSpeed * this.getXDirectionVector;
-        this.setY = this.getY + this.getSpeed * this.getYDirectionVector;
+        gameObject.setX(obj, gameObject.getX(obj) + gameObject.getSpeed(obj) * gameObject.getXDirectionVector(obj));
+        gameObject.setY(obj, gameObject.getY(obj) + gameObject.getSpeed(obj) * gameObject.getYDirectionVector(obj));
     }
 }
+
+// Начальные значения у некоторых переменных могут быть другими (при игре со своими настройками), поэтому для них
+// созданы их копии (с припиской Default в конце имени), в к-х и будут храниться эти начальные значения.
 
 let FPS = 1000 / 25;                                        // Частота кадров
 let rateComplications = 3;                                  // Через какие промежутки времени игра будет усложняться (в сек.)
@@ -187,38 +196,59 @@ let minutes = 0;                                            // Сколько м
 let seconds = 0;                                            // Сколько секунд продержался игрок
 let frames = 0;                                             // Сколько кадров продержался игрок
 
-const player = new gameObject(70, 70, 40, 50, null, 12);    // Объект игрока
 let pressA = false;                                         // Какие кнопки нажаты на клавиатуре
 let pressD = false;
 let pressW = false;
 let pressS = false;
 
-player.maxHealth = 5;                                       // Максимальное здоровье игрока
+let playerSpeedDefault = 12; // (свои настройки)
+let playerSpeed = playerSpeedDefault;                       // Скорость игрока
+
+let playerWidth = 40;                                       // Ширина и высота игрока
+let playerHeight = 50;
+
+// Объект игрока
+let player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, null, playerSpeed);
+
+let playerMaxHealthDefault = 5; // (свои настройки)
+player.maxHealth = playerMaxHealthDefault;                  // Максимальное здоровье игрока
 player.health = player.maxHealth;                           // Текущее здоровье игрока
 
-player.ammunitionSize = 30;                                 // Сколько максимально пуль в боезапасе игрока
+let playerAmmunitionSizeDefault = 30; // (свои настройки)
+player.ammunitionSize = playerAmmunitionSizeDefault;        // Сколько максимально пуль в боезапасе игрока
 player.ammunition = player.ammunitionSize;                  // Сколько сейчас пуль в боезапасе игрока
 
 player.isShooting = false;                                  // Стреляет ли игрок
-player.RELOAD = 8;                                          // Сколько времени в кадрах требуется для перезарядки
+
+let playerReloadDefault = 8; // (свои настройки)
+player.RELOAD = playerReloadDefault;                        // Сколько времени в кадрах требуется для перезарядки
 player.reload = 0;                                          // Сколько времени осталось до следующего выстрела
-player.bulletSize = 10;                                     // Размер пуль
-player.bulletSpeed = 16;                                    // Скорость пуль
 
-const bullets = [];                                         // Массив пуль
+let playerBulletSizeDefault = 10; // (свои настройки)
+player.bulletSize = playerBulletSizeDefault;                // Размер пуль
 
-const bonuses = [];                                         // Массив бонусов
+let playerBulletSpeedDefault = 16; // (свои настройки)
+player.bulletSpeed = playerBulletSpeedDefault;              // Скорость пуль
 
-let minTimeBonus = FPS * 5;                                 // Минимальное и максимальное время появления бонуса
-let maxTimeBonus = FPS * 15;
+let bullets = [];                                         // Массив пуль
+
+let bonuses = [];                                         // Массив бонусов
+
+let minTimeBonusDefault = FPS * 5;  // (свои настройки)
+let maxTimeBonusDefault = FPS * 25; // (свои настройки)
+let minTimeBonus = minTimeBonusDefault;                     // Минимальное и максимальное время появления бонуса
+let maxTimeBonus = maxTimeBonusDefault;
 
 // Время до появления следующего бонуса
 let timeBonus = RandN(minTimeBonus, maxTimeBonus + 1, true);
 
-const asteroids = [];                                       // Массив астероидов
+let asteroids = [];                                       // Массив астероидов
 
-let startSpawnRateAsteroids = 25;                           // Начальная и конечная частота появления астероидов
-let finishSpawnRateAsteroids = 5;
+// Начальная и конечная частота появления астероидов
+let startSpawnRateAsteroidsDefault = 25; // (свои настройки)
+let finishSpawnRateAsteroidsDefault = 1; // (свои настройки)
+let startSpawnRateAsteroids = startSpawnRateAsteroidsDefault;
+let finishSpawnRateAsteroids = finishSpawnRateAsteroidsDefault;
 
 let spawnRateAsteroids = startSpawnRateAsteroids;           // Текущая частота появления астероидов
 let timeNextAsteroid = spawnRateAsteroids;                  // Время до появления следующего астероида
@@ -227,7 +257,7 @@ let startMinSpeedAsteroid = 1;                              // Минималь�
 let startMaxSpeedAsteroid = 8;
 
 let finishMinSpeedAsteroid = 7;                             // Минимальная и максимальная скорость астероидов в конце
-let finishMaxSpeedAsteroid = 20;
+let finishMaxSpeedAsteroid = 35;
 
 let minSpeedAsteroid = startMinSpeedAsteroid;               // Текущая минимальная и максимальная скорость астероидов
 let maxSpeedAsteroid = startMaxSpeedAsteroid;
@@ -293,26 +323,26 @@ function frameDraw() {
     // ОТРИСОВКА ИГРОВЫХ ОБЪЕКТОВ
 
     ctx.fillStyle = "white";         // Отрисовываем объект игрока
-    ctx.fillRect(player.getX, player.getY, player.getWidth, player.getHeight);
+    ctx.fillRect(gameObject.getX(player), gameObject.getY(player), gameObject.getWidth(player), gameObject.getHeight(player));
 
     // Отрисовываем бонусы
     for (let i = 0; i < bonuses.length; i++) {
         if (bonuses[i].type == 'health') ctx.fillStyle = 'red';  // Выбираем цвет в зависимости от типа бонуса
         else ctx.fillStyle = '#80DAEB';
         
-        ctx.fillRect(bonuses[i].getX, bonuses[i].getY, bonuses[i].getWidth, bonuses[i].getHeight);
+        ctx.fillRect(gameObject.getX(bonuses[i]), gameObject.getY(bonuses[i]), gameObject.getWidth(bonuses[i]), gameObject.getHeight(bonuses[i]));
     }
 
     // Отрисовываем пули
     ctx.fillStyle = '#80DAEB';
     for (let i = 0; i < bullets.length; i++) {
-        ctx.fillRect(bullets[i].getX, bullets[i].getY, bullets[i].getWidth, bullets[i].getHeight);
+        ctx.fillRect(gameObject.getX(bullets[i]), gameObject.getY(bullets[i]), gameObject.getWidth(bullets[i]), gameObject.getHeight(bullets[i]));
     }
 
     // Отрисовываем астероиды
     ctx.fillStyle = 'grey';
     for (let i = 0; i < asteroids.length; i++) {
-        ctx.fillRect(asteroids[i].getX, asteroids[i].getY, asteroids[i].getWidth, asteroids[i].getHeight);
+        ctx.fillRect(gameObject.getX(asteroids[i]), gameObject.getY(asteroids[i]), gameObject.getWidth(asteroids[i]), gameObject.getHeight(asteroids[i]));
     }
 
     // ОТРИСОВКА ИГРОВОГО ИНТЕРФЕЙСА
@@ -351,6 +381,124 @@ function RandN(min, max, isInteger) {
     }
 }
 
+// Процедура приводящая значения игровых переменных к начальным
+function initialValues() {
+    timeNextComplication = rateComplications * FPS;            // Сколько времени осталось до следующего усложения (в кадрах)
+
+    minutes = 0;                                               // Сколько минут продержался игрок
+    seconds = 0;                                               // Сколько секунд продержался игрок
+    frames = 0;                                                // Сколько кадров продержался игрок
+
+    playerSpeed = playerSpeedDefault;                          // Скорость игрока
+
+    // Объект игрока
+    player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, null, playerSpeed);
+
+    player.maxHealth = playerMaxHealthDefault;                  // Максимальное здоровье игрока
+    player.health = player.maxHealth;                           // Текущее здоровье игрока
+
+    player.ammunitionSize = playerAmmunitionSizeDefault;        // Сколько максимально пуль в боезапасе игрока
+    player.ammunition = player.ammunitionSize;                  // Сколько сейчас пуль в боезапасе игрока
+
+    player.isShooting = false;                                  // Стреляет ли игрок
+
+    player.RELOAD = playerReloadDefault;                        // Сколько времени в кадрах требуется для перезарядки
+    player.reload = 0;                                          // Сколько времени осталось до следующего выстрела
+
+    player.bulletSize = playerBulletSizeDefault;                // Размер пуль
+
+    player.bulletSpeed = playerBulletSpeedDefault;              // Скорость пуль
+
+    bullets = [];                                               // Массив пуль
+
+    bonuses = [];                                               // Массив бонусов
+
+    minTimeBonus = minTimeBonusDefault;                         // Минимальное и максимальное время появления бонуса
+    maxTimeBonus = maxTimeBonusDefault;
+
+    // Время до появления следующего бонуса
+    timeBonus = RandN(minTimeBonus, maxTimeBonus + 1, true);
+
+    asteroids = [];                                             // Массив астероидов
+
+    // Начальная и конечная частота появления астероидов
+    startSpawnRateAsteroids = startSpawnRateAsteroidsDefault;
+    finishSpawnRateAsteroids = finishSpawnRateAsteroidsDefault;
+
+    spawnRateAsteroids = startSpawnRateAsteroids;               // Текущая частота появления астероидов
+    timeNextAsteroid = spawnRateAsteroids;                      // Время до появления следующего астероида
+
+    minSpeedAsteroid = startMinSpeedAsteroid;                   // Текущая минимальная и максимальная скорость астероидов
+    maxSpeedAsteroid = startMaxSpeedAsteroid;
+}
+
+// Процедура записывающая значения игровых переменных в localStorage (Сохранение игры)
+function saveProgress() {
+    localStorage.setItem("timeNextComplication", timeNextComplication.toString());
+
+    localStorage.setItem("minutes", minutes.toString());
+    localStorage.setItem("seconds", seconds.toString());
+    localStorage.setItem("frames", frames.toString());
+
+    localStorage.setItem("player", JSON.stringify(player));
+
+    localStorage.setItem("bullets", JSON.stringify(bullets));
+
+    localStorage.setItem("bonuses", JSON.stringify(bonuses));
+
+    localStorage.setItem("minTimeBonus", minTimeBonus.toString());
+    localStorage.setItem("maxTimeBonus", maxTimeBonus.toString());
+
+    localStorage.setItem("timeBonus", timeBonus.toString());
+
+    localStorage.setItem("asteroids", JSON.stringify(asteroids));
+
+    localStorage.setItem("startSpawnRateAsteroids", startSpawnRateAsteroids.toString());
+    localStorage.setItem("finishSpawnRateAsteroids", finishSpawnRateAsteroids.toString());
+
+    localStorage.setItem("spawnRateAsteroids", spawnRateAsteroids.toString());
+    localStorage.setItem("timeNextAsteroid", timeNextAsteroid.toString());
+
+    localStorage.setItem("minSpeedAsteroid", minSpeedAsteroid.toString());
+    localStorage.setItem("maxSpeedAsteroid", maxSpeedAsteroid.toString());
+}
+
+// Процедура считывающая значения игровых переменных из localStorage (Загрузка игры)
+function loadProgress() {
+    timeNextComplication = Number.parseInt(localStorage.getItem("timeNextComplication"));
+
+    minutes = Number.parseInt(localStorage.getItem("minutes"));
+    seconds = Number.parseInt(localStorage.getItem("seconds"));
+    frames = Number.parseInt(localStorage.getItem("frames"));
+
+    player = JSON.parse(localStorage.getItem("player"));
+
+    bullets = JSON.parse(localStorage.getItem("bullets"));
+    
+    bonuses = JSON.parse(localStorage.getItem("bonuses"));
+
+    minTimeBonus = Number.parseInt(localStorage.getItem("minTimeBonus"));
+    maxTimeBonus = Number.parseInt(localStorage.getItem("maxTimeBonus"));
+
+    timeBonus = Number.parseInt(localStorage.getItem("timeBonus"));
+
+    asteroids = JSON.parse(localStorage.getItem("asteroids"));
+
+    startSpawnRateAsteroids = Number.parseInt(localStorage.getItem("startSpawnRateAsteroids"));
+    finishSpawnRateAsteroids = Number.parseInt(localStorage.getItem("finishSpawnRateAsteroids"));
+
+    spawnRateAsteroids = Number.parseInt(localStorage.getItem("spawnRateAsteroids"));
+    timeNextAsteroid = Number.parseInt(localStorage.getItem("timeNextAsteroid"));
+
+    minSpeedAsteroid = Number.parseInt(localStorage.getItem("minSpeedAsteroid"));
+    maxSpeedAsteroid = Number.parseInt(localStorage.getItem("maxSpeedAsteroid"));
+}
+
+// Процедура блокирующая кнопку "продолжить" если нет сохранений, и делающая её доступной если сохранения есть
+function continueButtonAccess() {
+    if (Number.parseInt(localStorage.getItem("loadExist")) != 1) continueGameButton.disabled = true;
+    else continueGameButton.disabled = false;
+}
 
 // ------------------------------------------------------------------------------ >
 
@@ -365,26 +513,26 @@ function oneFrameGameCycle() {
     // Игра будет продолжаться если она не на паузе
     if (!isGamePause) {
         // Меняем направляющий вектор игрока в зависимости от нажатой клавиши
-        if (pressA) player.setXDirectionVector = -1;
-        else if (pressD) player.setXDirectionVector = 1;
-        else player.setXDirectionVector = 0;
-        if (pressW) player.setYDirectionVector = -1;
-        else if (pressS) player.setYDirectionVector = 1;
-        else player.setYDirectionVector = 0;
+        if (pressA) gameObject.setXDirectionVector(player, -1);
+        else if (pressD) gameObject.setXDirectionVector(player, 1);
+        else gameObject.setXDirectionVector(player, 0);
+        if (pressW) gameObject.setYDirectionVector(player, -1);
+        else if (pressS) gameObject.setYDirectionVector(player, 1);
+        else gameObject.setYDirectionVector(player, 0);
 
-        player.move();       // Двигаем игрока
+        gameObject.move(player);       // Двигаем игрока
 
         // Не даём игроку выйти за пределы экрана
-        if (player.getX < 0) player.setX = 0;
-        else if (player.getX + player.getWidth > 1280) player.setX = 1280 - player.getWidth;
-        if (player.getY < 0) player.setY = 0;
-        else if (player.getY + player.getHeight > 720) player.setY = 720 - player.getHeight;
+        if (gameObject.getX(player) < 0) gameObject.setX(player, 0);
+        else if (gameObject.getX(player) + gameObject.getWidth(player) > 1280) gameObject.setX(player, 1280 - gameObject.getWidth(player));
+        if (gameObject.getY(player) < 0) gameObject.setY(player, 0);
+        else if (gameObject.getY(player) + gameObject.getHeight(player) > 720) gameObject.setY(player, 720 - gameObject.getHeight(player));
 
         if (player.reload > 0) player.reload--;    // Время до следующего выстрела уменьшается (происходит перезарядка)
 
         // Игрок стреляет если произошла перезарядка и зажата левая кнопка мыши и есть пули в боезапасе
         if (player.reload == 0 && player.isShooting && player.ammunition > 0) {
-            bullets.push(new gameObject(player.getX + player.getWidth / 2 - player.bulletSize / 2, player.getY - player.bulletSize, player.bulletSize, player.bulletSize, null, player.bulletSpeed, [0, -1]));
+            bullets.push(new gameObject(gameObject.getX(player) + gameObject.getWidth(player) / 2 - player.bulletSize / 2, gameObject.getY(player) - player.bulletSize, player.bulletSize, player.bulletSize, null, player.bulletSpeed, [0, -1]));
             bullets[bullets.length - 1].destroy = false;     // Уничтожается ли пуля (при попадании в астероид и вылет за границы экрана)
             player.reload = player.RELOAD;
             player.ammunition--;
@@ -392,8 +540,8 @@ function oneFrameGameCycle() {
 
         // Двигаем все пули и уничтожаем их если они улетели за край экрана
         for (let i = 0; i < bullets.length; i++) {
-            bullets[i].move();
-            if (bullets[i].getY < -100 - player.bulletSize) {
+            gameObject.move(bullets[i]);
+            if (gameObject.getY(bullets[i]) < -100 - player.bulletSize) {
                 bullets[i].destroy = true;
             }
         }
@@ -446,8 +594,8 @@ function oneFrameGameCycle() {
 
         // Двигаем все астероиды и уничтожаем их если они улетели вниз
         for (let i = 0; i < asteroids.length; i++) {
-            asteroids[i].move();
-            if (asteroids[i].getY > 1000) {
+            gameObject.move(asteroids[i]);
+            if (gameObject.getY(asteroids[i]) > 1000) {
                 asteroids[i].strength = 0;
             }
         }
@@ -523,8 +671,8 @@ function oneFrameGameCycle() {
 
         // Двигаем бонусы и уничтожаем их при вылете за пределы экрана
         for (let i = 0; i < bonuses.length; i++) {
-            bonuses[i].move();
-            if (bonuses[i].getY > 1000) bonuses[i].destroy = true;
+            gameObject.move(bonuses[i]);
+            if (gameObject.getY(bonuses[i]) > 1000) bonuses[i].destroy = true;
         }
 
         // Отслеживаем столкновения бонусов с игроком
@@ -546,11 +694,20 @@ function oneFrameGameCycle() {
 
         // ОТРИСОВКА КАДРА
         frameDraw();
+
+        // Игрок проигрывает если теряет все очки здоровья
+        if (player.health <= 0) {
+            endGameCycle();
+            gaming.style.display =         'none';
+            gameOverMenu.style.display =   'flex';
+        }
     }
 }
 
 // Процедура запуска игрового цикла
 function startGameCycle() {
+    ctx.fillStyle = '#1d242f';           // Закрашиваем холст (чтобы кадры из прошлых игр не мелькали в начале)
+    ctx.fillRect(0, 0, 1280, 720);
     gameCycle = setInterval(oneFrameGameCycle, FPS);
 }
 
@@ -565,6 +722,8 @@ function endGameCycle() {
 standartModeButton.onclick = function() {
     modeSelection.style.display = 'none';
     gaming.style.display =        'block';
+    initialValues();
+    localStorage.setItem('loadExist', '0');   // Мы начинаем новую игру, поэтому сохранений больше нет
     startGameCycle();
 }
 
@@ -595,15 +754,19 @@ resumeGameButton.onclick = function() {
 
 // Сохраняем прогресс и выходим из игры в главное меню при нажатии "сохранить и выйти"
 saveAndOutButton.onclick = function() {
+    saveProgress();
+    localStorage.setItem("loadExist", '1');
     endGameCycle();
     pauseMenu.style.display = 'none';
     mainMenu.style.display =  'flex';
+    continueButtonAccess();
 }
 
 // Восполняем сохранённый прогресс и продолжаем игру при нажатии на "продолжить"
 continueGameButton.onclick = function() {
     mainMenu.style.display = 'none';
     gaming.style.display =   'block';
+    loadProgress();
     startGameCycle();
 }
 
@@ -617,6 +780,8 @@ customModeButton.onclick = function() {
 startCustomGameButton.onclick = function() {
     changeSettings.style.display = 'none';
     gaming.style.display =         'block';
+    initialValues();
+    localStorage.setItem('loadExist', '0');
     startGameCycle();
 }
 
@@ -625,3 +790,23 @@ fromChangeSettingsToModeSelectionButton.onclick = function() {
     changeSettings.style.display = 'none';
     modeSelection.style.display =  'flex';
 }
+
+// Выходим из меню конца игры в главное меню
+fromGameOverMenuToMainMenuButton.onclick = function() {
+    gameOverMenu.style.display = 'none';
+    mainMenu.style.display =     'flex';
+    initialValues();
+    localStorage.setItem('loadExist', '0');
+    continueButtonAccess();
+}
+
+// Перезапускаем игру из меню конца игры
+restartGameButton.onclick = function() {
+    gameOverMenu.style.display = 'none';
+    gaming.style.display =       'block';
+    initialValues();
+    localStorage.setItem('loadExist', '0');
+    startGameCycle();
+}
+
+continueButtonAccess();   // Изначально мы заходим в главное меню, поэтому нужно по необходимости заблокировать кнопку "продолжить"
