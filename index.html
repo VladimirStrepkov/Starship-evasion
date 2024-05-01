@@ -19,30 +19,34 @@
         <div class="element-div">
             <table id="rating-table">
                 <tr>
-                    <td>Игрок</td>
+                    <td>Имя игрока</td>
                     <td>Рекорд</td>
                 </tr>
                 <tr>
-                    <td>Игрок1</td>
-                    <td>1:23</td>
+                    <td id="result-1-name">--------</td>
+                    <td id="result-1-value">0:0</td>
                 </tr>
                 <tr>
-                    <td>Игрок2</td>
-                    <td>1:11</td>
+                    <td id="result-2-name">--------</td>
+                    <td id="result-2-value">0:0</td>
                 </tr>
                 <tr>
-                    <td>Игрок3</td>
-                    <td>0:40</td>
+                    <td id="result-3-name">--------</td>
+                    <td id="result-3-value">0:0</td>
                 </tr>
                 <tr>
-                    <td>Игрок4</td>
-                    <td>0:33</td>
+                    <td id="result-4-name">--------</td>
+                    <td id="result-4-value">0:0</td>
                 </tr>
                 <tr>
-                    <td>Игрок5</td>
-                    <td>0:12</td>
+                    <td id="result-5-name">--------</td>
+                    <td id="result-5-value">0:0</td>
                 </tr>
             </table>
+        </div>
+        <div class="element-div">
+            <input id="change-name-input" type="text" name="login" maxlength="15"/>
+            <button id="change-name-button" class="button">Изменить имя</button>
         </div>
         <div class="element-div"><button id="from-rating-to-main-menu-button" class="button">Главное меню</button></div>
     </div>
@@ -56,6 +60,74 @@
 
     <div id="change-settings" class="game-tab">
         <div class="element-div"><h1 class="title">Свои настройки</h1></div>
+        <div class="element-div">
+            <h2>Скорость</h2>
+            <select id="player-speed">
+                <option value="1">Очень низкая</option>
+                <option value="2">Низкая</option>
+                <option value="3" selected>Стандарт</option>
+                <option value="4">Высокая</option>
+                <option value="5">Очень высокая</option>
+            </select>
+            <h2>Здоровье</h2>
+            <select id="player-health">
+                <option value="1">1</option>
+                <option value="2">3</option>
+                <option value="3" selected>5</option>
+                <option value="4">8</option>
+                <option value="5">15</option>
+            </select>
+            <h2>Боезапас</h2>
+            <select id="player-ammunition">
+                <option value="1">10</option>
+                <option value="2">20</option>
+                <option value="3" selected>30</option>
+                <option value="4">50</option>
+                <option value="5">100</option>
+            </select>
+            <h2>Кол-во астероидов</h2>
+            <select id="count-asteroids">
+                <option value="1">Очень мало</option>
+                <option value="2">Мало</option>
+                <option value="3" selected>Стандарт</option>
+                <option value="4">Много</option>
+                <option value="5">Очень много</option>
+            </select>
+        </div>
+        <div class="element-div">
+            <h2>перезарядка</h2>
+            <select id="player-reload">
+                <option value="1">1/сек</option>
+                <option value="2">4/сек</option>
+                <option value="3" selected>5/сек</option>
+                <option value="4">8/сек</option>
+                <option value="5">10/сек</option>
+            </select>
+            <h2>Пули</h2>
+            <select id="bullet-size">
+                <option value="1">Крохотные</option>
+                <option value="2">Малые</option>
+                <option value="3" selected>Стандарт</option>
+                <option value="4">Большие</option>
+                <option value="5">Огромные</option>
+            </select>
+            <h2>скорость пуль</h2>
+            <select id="bullet-speed">
+                <option value="1">Очень низкая</option>
+                <option value="2">Низкая</option>
+                <option value="3" selected>Стандарт</option>
+                <option value="4">Высокая</option>
+                <option value="5">Очень высокая</option>
+            </select>
+            <h2>Кол-во бонусов</h2>
+            <select id="count-bonuses">
+                <option value="1">Очень мало</option>
+                <option value="2">Мало</option>
+                <option value="3" selected>Стандарт</option>
+                <option value="4">Много</option>
+                <option value="5">Очень много</option>
+            </select>
+        </div>
         <div class="element-div"><button id="start-custom-game-button" class="button">Начать</button></div>
         <div class="element-div"><button id="from-change-settings-to-mode-selection-button" class="button">Назад</button></div>
     </div>
@@ -68,6 +140,7 @@
 
     <div id="game-over-menu"  class="game-tab">
         <div class="element-div"><h1 class="title">Конец игры</h1></div>
+        <div class="element-div"><h1 id="game-result"></h1></div>
         <div class="element-div"><button id="restart-game" class="button">Попробовать ещё раз</button></div>
         <div class="element-div"><button id="from-game-over-menu-to-main-menu" class="button">В главное меню</button></div>
     </div>

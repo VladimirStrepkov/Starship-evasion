@@ -36,6 +36,13 @@ let fromChangeSettingsToModeSelectionButton = document.getElementById("from-chan
 let restartGameButton = document.getElementById("restart-game");
 let fromGameOverMenuToMainMenuButton = document.getElementById("from-game-over-menu-to-main-menu");
 
+// Надпись с результатом в меню конца игры
+let gameResultInscription = document.getElementById("game-result");
+
+// Поле ввода для изменения имени игрока в меню рейтинга и кнопка для изменения имени
+let changeNameInput = document.getElementById('change-name-input');
+let changeNameButton = document.getElementById('change-name-button');
+
 // По умолчанию скрываем все блоки кроме главного меню
 ratingMenu.style.display =     'none';
 gaming.style.display =         'none';
@@ -44,10 +51,42 @@ changeSettings.style.display = 'none';
 pauseMenu.style.display =      'none';
 gameOverMenu.style.display =   'none';
 
+// Ячейки таблицы рейтинга
+// Имена
+let resultsNames = [];
+for (let i = 0; i < 5; i++) {
+    resultsNames.push(document.getElementById(`result-${i + 1}-name`));
+}
+// Значения
+let resultsValues = [];
+for (let i = 0; i < 5; i++) {
+    resultsValues.push(document.getElementById(`result-${i + 1}-value`));
+}
+
+
+
 // Заходим в меню рейтинга
 ratingMenuButton.onclick = function() {
+    // Пишем текущее имя игрока в поле для его ввода
+    if (localStorage.getItem('playerName') == null) changeNameInput.value = "Игрок";
+    else changeNameInput.value = localStorage.getItem('playerName');
+
+    // Загружаем результаты в рейтинг
+    if (localStorage.getItem('gameResults') != null) {
+        let gameResults = JSON.parse(localStorage.getItem('gameResults'));
+        for (let i = 0; i < 5; i++) {
+            resultsNames[i].innerHTML = gameResults[i][0];
+            resultsValues[i].innerHTML = `${Math.floor(gameResults[i][1] / 60)}:${gameResults[i][1] % 60}`;
+        }
+    }
+
     mainMenu.style.display =   'none';
     ratingMenu.style.display = 'flex';
+}
+
+// Меняем имя игрока при нажатии на соответствующую кнопку в меню рейтинга
+changeNameButton.onclick = function() {
+    if (changeNameInput.value.length > 0) localStorage.setItem('playerName', changeNameInput.value);
 }
 
 // Кнопка выхода из меню рейтинга в главное меню
@@ -500,6 +539,201 @@ function continueButtonAccess() {
     else continueGameButton.disabled = false;
 }
 
+// Выпадающие списки
+let playerSpeedSelect =      document.getElementById("player-speed");
+let playerHealthSelect =     document.getElementById("player-health");
+let playerAmmunitionSelect = document.getElementById("player-ammunition");
+let countAsteroidsSelect =   document.getElementById("count-asteroids");
+let playerReloadSelect =     document.getElementById('player-reload');
+let bulletSizeSelect =       document.getElementById('bullet-size');
+let bulletSpeedSelect =      document.getElementById('bullet-speed');
+let countBonusesSelect =     document.getElementById('count-bonuses');
+
+// Процедура меняющая стандартное значение некоторых игровых переменных в зависимости от соответствующих выпадающих списков (свои настройки)
+function yourSettings() {
+    localStorage.setItem('isDefaultSettings', 0); // Записываем в localStorage то, что мы поменяли стандартные настройки
+
+    let selectedPlayerSpeed = Number(playerSpeedSelect.options[playerSpeedSelect.selectedIndex].value);
+    let selectedPlayerHealth = Number(playerHealthSelect.options[playerHealthSelect.selectedIndex].value);
+    let selectedPlayerAmmunition = Number(playerAmmunitionSelect.options[playerAmmunitionSelect.selectedIndex].value);
+    let selectedCountAsteroids = Number(countAsteroidsSelect.options[countAsteroidsSelect.selectedIndex].value);
+    let selectedPlayerReload = Number(playerReloadSelect.options[playerReloadSelect.selectedIndex].value);
+    let selectedBulletSize = Number(bulletSizeSelect.options[bulletSizeSelect.selectedIndex].value);
+    let selectedBulletSpeed = Number(bulletSpeedSelect.options[bulletSpeedSelect.selectedIndex].value);
+    let selectedCountBonuses = Number(countBonusesSelect.options[countBonusesSelect.selectedIndex].value);
+
+    switch (selectedPlayerSpeed) {
+        case 1:
+            playerSpeedDefault = 4;
+            break;
+        case 2:
+            playerSpeedDefault = 8;
+            break;
+        case 3:
+            playerSpeedDefault = 12;
+            break;
+        case 4:
+            playerSpeedDefault = 18;
+            break;
+        case 5:
+            playerSpeedDefault = 25;
+            break;
+    }
+
+    switch (selectedPlayerHealth) {
+        case 1:
+            playerMaxHealthDefault = 1;
+            break;
+        case 2:
+            playerMaxHealthDefault = 3;
+            break;
+        case 3:
+            playerMaxHealthDefault = 5;
+            break;
+        case 4:
+            playerMaxHealthDefault = 8;
+            break;
+        case 5:
+            playerMaxHealthDefault = 15;
+            break;
+    }
+
+    switch (selectedPlayerAmmunition) {
+        case 1:
+            playerAmmunitionSizeDefault = 10;
+            break;
+        case 2:
+            playerAmmunitionSizeDefault = 20;
+            break;
+        case 3:
+            playerAmmunitionSizeDefault = 30;
+            break;
+        case 4:
+            playerAmmunitionSizeDefault = 50;
+            break;
+        case 5:
+            playerAmmunitionSizeDefault = 100;
+            break;
+    }
+
+    switch (selectedCountAsteroids) {
+        case 1:
+            startSpawnRateAsteroidsDefault = 50;
+            finishSpawnRateAsteroidsDefault = 15;
+            break;
+        case 2:
+            startSpawnRateAsteroidsDefault = 40;
+            finishSpawnRateAsteroidsDefault = 10;
+            break;
+        case 3:
+            startSpawnRateAsteroidsDefault = 25;
+            finishSpawnRateAsteroidsDefault = 1;
+            break;
+        case 4:
+            startSpawnRateAsteroidsDefault = 15;
+            finishSpawnRateAsteroidsDefault = 1;
+            break;
+        case 5:
+            startSpawnRateAsteroidsDefault = 5;
+            finishSpawnRateAsteroidsDefault = 1;
+            break;
+    }
+
+    switch (selectedPlayerReload) {
+        case 1:
+            playerReloadDefault = 40;
+            break;
+        case 2:
+            playerReloadDefault = 10;
+            break;
+        case 3:
+            playerReloadDefault = 8;
+            break;
+        case 4:
+            playerReloadDefault = 5;
+            break;
+        case 5:
+            playerReloadDefault = 4;
+            break;
+    }
+
+    switch (selectedBulletSize) {
+        case 1:
+            playerBulletSizeDefault = 3;
+            break;
+        case 2:
+            playerBulletSizeDefault = 6;
+            break;
+        case 3:
+            playerBulletSizeDefault = 10;
+            break;
+        case 4:
+            playerBulletSizeDefault = 20;
+            break;
+        case 5:
+            playerBulletSizeDefault = 30;
+            break;
+    }
+
+    switch (selectedBulletSpeed) {
+        case 1:
+            playerBulletSpeedDefault = 5;
+            break;
+        case 2:
+            playerBulletSpeedDefault = 10;
+            break;
+        case 3:
+            playerBulletSpeedDefault = 16;
+            break;
+        case 4:
+            playerBulletSpeedDefault = 25;
+            break;
+        case 5:
+            playerBulletSpeedDefault = 40;
+            break;
+    }
+
+    switch (selectedCountBonuses) {
+        case 1:
+            minTimeBonusDefault = FPS * 20;
+            maxTimeBonusDefault = FPS * 50;
+            break;
+        case 2:
+            minTimeBonusDefault = FPS * 10;
+            maxTimeBonusDefault = FPS * 40;
+            break;
+        case 3:
+            minTimeBonusDefault = FPS * 5;
+            maxTimeBonusDefault = FPS * 25;
+            break;
+        case 4:
+            minTimeBonusDefault = FPS * 3;
+            maxTimeBonusDefault = FPS * 15;
+            break;
+        case 5:
+            minTimeBonusDefault = FPS;
+            maxTimeBonusDefault = FPS * 5;
+            break;
+    }
+
+}
+
+// Процедура меняющая стандартные значения некоторых игровых переменных делая их изначальными
+function defaultSettings() {
+    localStorage.setItem('isDefaultSettings', 1); // Записываем в localStorage то, что мы вернули стандартные настройки
+
+    playerSpeedDefault = 12;
+    playerMaxHealthDefault = 5;
+    playerAmmunitionSizeDefault = 30;
+    playerReloadDefault = 8;
+    playerBulletSizeDefault = 10;
+    playerBulletSpeedDefault = 16;
+    minTimeBonusDefault = FPS * 5; 
+    maxTimeBonusDefault = FPS * 25;
+    startSpawnRateAsteroidsDefault = 25;
+    finishSpawnRateAsteroidsDefault = 1;
+}
+
 // ------------------------------------------------------------------------------ >
 
 // Находится ли игра на паузе
@@ -697,12 +931,54 @@ function oneFrameGameCycle() {
 
         // Игрок проигрывает если теряет все очки здоровья
         if (player.health <= 0) {
+            let resultText = `Ваш результат: ${minutes}:${seconds}. `; // Текст с результатом
+
+            // Записывать результат в рейтинг будем только если у игры стандартные настройки
+            if (Number(localStorage.getItem('isDefaultSettings') == 1)) {
+                let playerName;                                            // Имя игрока, под которым запишется результат
+                let gameResults = [];                                      // Все результаты, отсортированные по невозрастанию
+
+                // Если у игрока нет имени, записываем стандартное
+                if (localStorage.getItem('playerName') == null) playerName = 'Игрок';
+                else playerName = localStorage.getItem('playerName');
+
+                // Создаём массив результатов если его ещё нет
+                if (localStorage.getItem('gameResults') == null) {
+                    // Заполняем массив пустыми значениями
+                    for (let i = 0; i < 5; i++) gameResults.push(['--------', 0]);
+                    // Записываем текущий результат как самый высокий
+                    gameResults[0] = [playerName, minutes * 60 + seconds];
+                    // Сохраняем результаты в localStorage
+                    localStorage.setItem('gameResults', JSON.stringify(gameResults));
+                    resultText += 'Вы заняли 1 место в рейтинге!';
+                } else {
+                    gameResults = JSON.parse(localStorage.getItem('gameResults'));
+                    // Сравниваем текущий результат с результатами в рейтинге
+                    for (let i = 0; i < 5; i++) {
+                        if (minutes * 60 + seconds >= gameResults[i][1]) {
+                            // Сдвигаем результаты вниз
+                            for (let j = 4; j > i; j--) {
+                                gameResults[j] = gameResults[j - 1];
+                            }
+                            gameResults[i] = [playerName, minutes * 60 + seconds];
+                            // Сохраняем результаты в localStorage
+                            localStorage.setItem('gameResults', JSON.stringify(gameResults));
+                            resultText += `Вы заняли ${i + 1} место в рейтинге!`;
+                            break;
+                        }
+                    }
+                }
+            } else resultText += 'Он не отобразится в рейтинге (свои настройки).';
+
+            gameResultInscription.innerHTML = resultText;
+
             endGameCycle();
             gaming.style.display =         'none';
             gameOverMenu.style.display =   'flex';
         }
     }
 }
+
 
 // Процедура запуска игрового цикла
 function startGameCycle() {
@@ -722,6 +998,7 @@ function endGameCycle() {
 standartModeButton.onclick = function() {
     modeSelection.style.display = 'none';
     gaming.style.display =        'block';
+    defaultSettings();
     initialValues();
     localStorage.setItem('loadExist', '0');   // Мы начинаем новую игру, поэтому сохранений больше нет
     startGameCycle();
@@ -780,6 +1057,7 @@ customModeButton.onclick = function() {
 startCustomGameButton.onclick = function() {
     changeSettings.style.display = 'none';
     gaming.style.display =         'block';
+    yourSettings();
     initialValues();
     localStorage.setItem('loadExist', '0');
     startGameCycle();
