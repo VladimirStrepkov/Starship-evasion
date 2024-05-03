@@ -332,7 +332,7 @@ document.addEventListener('keyup', function(event) {
         pressD = false;
     }
 
-    // Игрок перестаёт двигаться по вертикали
+    // Игрок перестаёт двигаться по вертикали 
     if (event.code === 'KeyW') {
         pressW = false;
     } else if (event.code === 'KeyS') {
@@ -340,17 +340,122 @@ document.addEventListener('keyup', function(event) {
     }
 })
 
-// Отслеживание нажатия левой кнопки мыши
-document.addEventListener("mousedown", function(event) {
-    if (event.button == 0) {
+let mouseX; // координаты курсора или нажатия пальцем
+let mouseY;
+
+// Процедура расчитывающая координаты курсора/нажатия c учётом полноэкранного режима
+function dependFullScreen() {
+    if (document.fullscreenElement) {
+        let sideStripe = 0; // Боковая полоса в полноэкранном режиме (если дисплей широкий)
+        let topStripe = 0;  // Верхняя полоса в полноэкранном режиме (если дисплей высокий)
+        
+        // Дисплей шире или выше чем предполагается
+        if (Math.floor(window.innerWidth / window.innerHeight) > Math.floor(1280 / 720)) {
+            sideStripe = (window.innerWidth - (window.innerHeight / 720 * 1280)) / 2;
+        } else if (Math.floor(window.innerWidth / window.innerHeight) < Math.floor(1280 / 720)) {
+            topStripe = (window.innerHeight - (window.innerWidth / 1280 * 720)) / 2;
+        }
+
+        mouseX = Math.floor((mouseX - sideStripe) * (1280 / (window.innerWidth - 2 * sideStripe)));
+        mouseY = Math.floor((mouseY - topStripe) * (720 / (window.innerHeight - 2 * topStripe)));
+    } else {
+        // Учитываем растягивание холста на всю ширину и высоту окна браузера
+        mouseX = Math.floor(mouseX / window.innerWidth * 1280);
+        mouseY = Math.floor(mouseY / window.innerHeight * 720);
+    }
+}
+
+// Отслеживание нажатия кнопки мыши
+gaming.addEventListener("mousedown", function(event) {
+    // Вычисляем координаты
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+
+    // Учитываем полноэкранный режим
+    dependFullScreen();
+
+    // Ставим на паузу если перед нажатием курсор был на кнопке паузы
+    if (mouseX >= 1160 && mouseX <= 1240 && mouseY >= 40 && mouseY <= 120) {
+        gaming.style.display =    'none';
+        pauseMenu.style.display = 'flex';
+        isGamePause = true;
+        // Если процесс игры останавливается/завершается, то мы выходим из полноэкранного режима
+        if (document.fullscreenElement) document.exitFullscreen();
+    } else if (mouseX >= 1040 && mouseX <= 1120 && mouseY >= 40 && mouseY <= 120) {
+        // Если игрок нажимает на кнопку полноэкранного режима, то игра переходит в полноэкранный режим или выходит из него
+        if (!document.fullscreenElement) {
+            gaming.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+    } else{
+        // В ином случае игрок стреляет
         player.isShooting = true;
     }
 })
 
-document.addEventListener("mouseup", function(event) {
-    if (event.button == 0) {
-        player.isShooting = false;
+gaming.addEventListener("mouseup", function(event) {
+    player.isShooting = false;
+})
+
+// Координаты джостика
+let joystickCenterX = 1125;
+let joystickCenterY = 575;
+
+let joystickCoordinateX = joystickCenterX;
+let joystickCoordinateY = joystickCenterY;
+
+// Процедура движения джостика
+function joystickMove() {
+    // Вычисляем расстояние до центра джостика и сравниваем с его радиусом
+    let distance = Math.sqrt((joystickCenterX - mouseX) ** 2 + (joystickCenterY - mouseY) ** 2);
+    if (distance <= 100) {
+        joystickCoordinateX = mouseX;
+        joystickCoordinateY = mouseY;
     }
+}
+
+// Отслеживание касаний пальцем (Для мобильных устройств)
+gaming.addEventListener("touchstart", function(event) {
+    // Вычисляем координаты
+    mouseX = event.changedTouches[0].pageX;
+    mouseY = event.changedTouches[0].pageY;
+
+    // Учитываем полноэкранный режим
+    dependFullScreen();
+
+    joystickMove();
+
+    // Ставим на паузу если перед нажатием курсор был на кнопке паузы
+    if (mouseX >= 1160 && mouseX <= 1240 && mouseY >= 40 && mouseY <= 120) {
+        gaming.style.display =    'none';
+        pauseMenu.style.display = 'flex';
+        isGamePause = true;
+        // Если процесс игры останавливается/завершается, то мы выходим из полноэкранного режима
+        if (document.fullscreenElement) document.exitFullscreen();
+    } else if (mouseX >= 1040 && mouseX <= 1120 && mouseY >= 40 && mouseY <= 120) {
+        // Если игрок нажимает на кнопку полноэкранного режима, то игра переходит в полноэкранный режим или выходит из него
+        if (!document.fullscreenElement) {
+            gaming.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+    } else if (mouseX >= 40 && mouseX <= 190 && mouseY >= 530 && mouseY <= 680) {
+        // Нажатие на кнопку стрельбы
+        player.isShooting = !player.isShooting;
+    }
+})
+
+// Отслеживание движений пальцем по экрану (Для мобильных устройств)
+gaming.addEventListener("touchmove", function(event) {
+    // Вычисляем координаты
+    mouseX = event.changedTouches[0].pageX;
+    mouseY = event.changedTouches[0].pageY;
+
+    // Учитываем полноэкранный режим
+    dependFullScreen();
+
+    joystickMove();
 })
 
 
@@ -408,6 +513,55 @@ function frameDraw() {
     ctx.fillStyle = '#00FF00';
     ctx.font = "36px serif";
     ctx.fillText(`${minutes}:${seconds}`, 210, 50);
+
+    // отрисовка кнопки паузы
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(1160, 40, 80, 80);
+    ctx.strokeRect(1175, 55, 20, 50);
+    ctx.strokeRect(1205, 55, 20, 50);
+
+    // отрисовка кнопки полноэкранного режима
+    ctx.strokeRect(1040, 40, 80, 80);
+
+    ctx.beginPath();
+    ctx.moveTo(1075, 50);
+    ctx.lineTo(1050, 50);
+    ctx.lineTo(1050, 75);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(1085, 50);
+    ctx.lineTo(1110, 50);
+    ctx.lineTo(1110, 75);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(1050, 85);
+    ctx.lineTo(1050, 110);
+    ctx.lineTo(1075, 110);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(1110, 85);
+    ctx.lineTo(1110, 110);
+    ctx.lineTo(1085, 110);
+    ctx.stroke();
+
+    // Отрисовка кнопки стрельбы и джостика (для мобильных устройств)
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        ctx.beginPath();
+        ctx.arc(joystickCenterX, joystickCenterY, 100, 0, 2 * Math.PI);
+        ctx.stroke();
+    
+        ctx.beginPath();
+        ctx.arc(joystickCoordinateX, joystickCoordinateY, 20, 0, 2 * Math.PI);
+        ctx.stroke();
+    
+        // Красим кнопку стрельбы в красный если игрок стреляет
+        if (player.isShooting) ctx.strokeStyle = 'red';
+        else ctx.strokeStyle = 'white';
+        ctx.strokeRect(40, 530, 150, 150);
+    }
 }
 
 // Функция для генерации случайного числа в заданном диапазоне
@@ -754,6 +908,10 @@ function oneFrameGameCycle() {
         else if (pressS) gameObject.setYDirectionVector(player, 1);
         else gameObject.setYDirectionVector(player, 0);
 
+        // Меняем направляющий вектор игрока в зависимости от положения джостика (Для мобильных устройств)
+        if (joystickCoordinateX != joystickCenterX) gameObject.setXDirectionVector(player, (joystickCoordinateX - joystickCenterX));
+        if (joystickCoordinateY != joystickCenterY) gameObject.setYDirectionVector(player, (joystickCoordinateY - joystickCenterY));
+
         gameObject.move(player);       // Двигаем игрока
 
         // Не даём игроку выйти за пределы экрана
@@ -931,6 +1089,9 @@ function oneFrameGameCycle() {
 
         // Игрок проигрывает если теряет все очки здоровья
         if (player.health <= 0) {
+            // Если процесс игры останавливается/завершается, то мы выходим из полноэкранного режима
+            if (document.fullscreenElement) document.exitFullscreen();
+
             let resultText = `Ваш результат: ${minutes}:${seconds}. `; // Текст с результатом
 
             // Записывать результат в рейтинг будем только если у игры стандартные настройки
@@ -1003,24 +1164,6 @@ standartModeButton.onclick = function() {
     localStorage.setItem('loadExist', '0');   // Мы начинаем новую игру, поэтому сохранений больше нет
     startGameCycle();
 }
-
-// Отслеживание нажатия клавиш на клавиатуре
-document.addEventListener('keydown', function(event) {
-    // Эти нажатия клавиш отслеживаются только если игровой цикл запущен
-    if (gameCycle != null) {
-        // Ставим игру на паузу или выходим из паузы
-        if (event.code === 'Escape') {
-            if (isGamePause) {
-                gaming.style.display =    'block';
-                pauseMenu.style.display = 'none';
-            } else {
-                gaming.style.display =    'none';
-                pauseMenu.style.display = 'flex';
-            }
-            isGamePause = !isGamePause;
-        }
-    }
-})
 
 // Выход из меню паузы при нажатии на кнопку "продолжить"
 resumeGameButton.onclick = function() {

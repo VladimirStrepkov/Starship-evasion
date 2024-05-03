@@ -69,6 +69,10 @@ select {
     margin-right: 5%;
 }
 
+#game-result {
+    white-space: normal;
+    text-align: center;
+}
 
 
 @media (min-width: 1920px) {
@@ -87,6 +91,10 @@ select {
     h2, select {
         font-size: 320%;
     }
+
+    #game-result {
+        font-size: 450%;
+    }
 }
 
 @media (min-width: 1000px) and (max-width: 1920px){
@@ -104,6 +112,10 @@ select {
 
     h2, select {
         font-size: 150%;
+    }
+
+    #game-result {
+        font-size: 350%;
     }
 }
 
@@ -127,6 +139,10 @@ select {
     h2, select {
         font-size: 100%;
     }
+
+    #game-result {
+        font-size: 250%;
+    }
 }
 
 @media (min-width: 375px) and (max-width: 768px){
@@ -149,6 +165,10 @@ select {
     h2, select {
         font-size: 40%;
     }
+
+    #game-result {
+        font-size: 150%;
+    }
 }
 
 @media (max-width: 375px){
@@ -170,5 +190,9 @@ select {
     
     h2, select {
         font-size: 20%;
+    }
+
+    #game-result {
+        font-size: 80%;
     }
 }
