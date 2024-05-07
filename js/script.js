@@ -120,16 +120,14 @@ class gameObject {
     y;
     width;
     height;
-    image = new Image();
     speed;              // скорость движения
     directionVector;    // единичный вектор направления движения
 
-    constructor (x = 0, y = 0, width = 1, height = 1, image = null, speed = 0, directionVector = [0, 0]) {
+    constructor (x = 0, y = 0, width = 1, height = 1, speed = 0, directionVector = [0, 0]) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        if (image != null) this.image.src = image;
         this.speed = speed;
         this.directionVector = directionVector;
     }
@@ -152,13 +150,6 @@ class gameObject {
     }
     static setSpeed(obj, value) {
         obj.speed = value;
-    }
-
-    static getImage(obj) {
-        return obj.image;
-    }
-    static setImage(obj, value) {
-        obj.image.src = value;
     }
 
     static getX(obj) {
@@ -243,11 +234,11 @@ let pressS = false;
 let playerSpeedDefault = 12; // (свои настройки)
 let playerSpeed = playerSpeedDefault;                       // Скорость игрока
 
-let playerWidth = 40;                                       // Ширина и высота игрока
-let playerHeight = 50;
+let playerWidth = 60;                                       // Ширина и высота игрока
+let playerHeight = 40;
 
 // Объект игрока
-let player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, null, playerSpeed);
+let player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, playerSpeed);
 
 let playerMaxHealthDefault = 5; // (свои настройки)
 player.maxHealth = playerMaxHealthDefault;                  // Максимальное здоровье игрока
@@ -458,36 +449,150 @@ gaming.addEventListener("touchmove", function(event) {
     joystickMove();
 })
 
+let playerImg = new Image();   // Картинка игрока
+playerImg.src = "img/player/player.png";
+
+// Картинки игрока при получении урона, столкновении с бонусами
+let playerDamageImg = new Image();
+playerDamageImg.src = "img/player/playerDamage.png";
+let playerHealthUpImg = new Image();
+playerHealthUpImg.src = "img/player/playerHealthUp.png";
+let playerAmmunitionUpImg = new Image();
+playerAmmunitionUpImg.src = "img/player/playerAmmunitionUp.png";
+
+// Номер текущей картинки игрока и (если она не стадартная) сколько кадров ещё её отрисовывать
+let numberPlayerImg = 0;
+let framesPlayerImg = 0;
+
+// Картинки бонусов
+let healthBonusImg = new Image();
+healthBonusImg.src = "img/healthBonus.png";
+let bulletBonusImg = new Image();
+bulletBonusImg.src = "img/bulletsBonus.png";
+
+// Процедура для получения кадров анимации в массив
+function getAnimationFrames(array, count, path) {
+    for (let i = 0; i < count; i++) {
+        array.push(new Image());
+        array[i].src = `${path}/${i}.gif`;
+    }
+}
+
+// Анимации астероидов
+let smallAsteroidImgs = [];
+getAnimationFrames(smallAsteroidImgs, 16, "img/smallAsteroid");
+
+let mediumAsteroidImgs = [];
+getAnimationFrames(mediumAsteroidImgs, 14, "img/mediumAsteroid");
+
+let bigAsteroidImgs = [];
+getAnimationFrames(bigAsteroidImgs, 12, "img/bigAsteroid");
+
+// Картинка фон
+let backgroundImg = new Image();
+backgroundImg.src = "img/background.png";
+let backgroundY1 = 0, backgroundY2 = -720;
+
+// Разрушение пули
+let bulletDestroyImgs = [];
+getAnimationFrames(bulletDestroyImgs, 8, "img/bulletDestroy");
+let bulletDestroyEffects = [];
+
+// разрушение маленького астероида
+let smallAsteroidDestroyImgs = [];
+getAnimationFrames(smallAsteroidDestroyImgs, 6, "img/smallAsteroidDestroy");
+let smallAsteroidDestroyEffects = [];
+
+// разрушение среднего астероида
+let mediumAsteroidDestroyImgs = [];
+getAnimationFrames(mediumAsteroidDestroyImgs, 7, "img/mediumAsteroidDestroy");
+let mediumAsteroidDestroyEffects = [];
+
+// разрушение большого астероида
+let bigAsteroidDestroyImgs = [];
+getAnimationFrames(bigAsteroidDestroyImgs, 7, "img/bigAsteroidDestroy");
+let bigAsteroidDestroyEffects = [];
+
+// Процедура для отрисовки эффекта
+function drawEffect(arrayImgs, arrayEffects) {
+    for (let i = 0; i < arrayEffects.length; i++) {
+        if (arrayEffects[i][2] > arrayImgs.length - 1) {
+            arrayEffects.splice(i, 1);
+            i--;
+        } else {
+            ctx.drawImage(arrayImgs[arrayEffects[i][2]], arrayEffects[i][0], arrayEffects[i][1]);
+            arrayEffects[i][2]++;
+        }
+    }
+}
 
 // Процедура отрисовки кадра
 function frameDraw() {
-    ctx.fillStyle = '#1d242f';
-    ctx.fillRect(0, 0, 1280, 720);   // Перед тем как рисовать новый кадр, стираем старый (закрашиваем)
+    // Рисуем фон
+    ctx.drawImage(backgroundImg, 0, backgroundY1);
+    ctx.drawImage(backgroundImg, 0, backgroundY2);
+    if (backgroundY1 < 720) backgroundY1+=2;
+    else backgroundY1 = -718;
+    if (backgroundY2 < 720) backgroundY2+=2;
+    else backgroundY2 = -718;
 
     // ОТРИСОВКА ИГРОВЫХ ОБЪЕКТОВ
 
-    ctx.fillStyle = "white";         // Отрисовываем объект игрока
-    ctx.fillRect(gameObject.getX(player), gameObject.getY(player), gameObject.getWidth(player), gameObject.getHeight(player));
+    // отрисовываем игрока
+    if (numberPlayerImg == 1) {
+        ctx.drawImage(playerDamageImg, gameObject.getX(player), gameObject.getY(player));
+    } else if (numberPlayerImg == 2) {
+        ctx.drawImage(playerHealthUpImg, gameObject.getX(player), gameObject.getY(player));
+    } else if (numberPlayerImg == 3) {
+        ctx.drawImage(playerAmmunitionUpImg, gameObject.getX(player), gameObject.getY(player));
+    } else {
+        ctx.drawImage(playerImg, gameObject.getX(player), gameObject.getY(player));
+    }
+    if (framesPlayerImg > 0) framesPlayerImg--;
+    else numberPlayerImg = 0;
 
     // Отрисовываем бонусы
     for (let i = 0; i < bonuses.length; i++) {
-        if (bonuses[i].type == 'health') ctx.fillStyle = 'red';  // Выбираем цвет в зависимости от типа бонуса
-        else ctx.fillStyle = '#80DAEB';
-        
-        ctx.fillRect(gameObject.getX(bonuses[i]), gameObject.getY(bonuses[i]), gameObject.getWidth(bonuses[i]), gameObject.getHeight(bonuses[i]));
+        if (bonuses[i].type == 'health') ctx.drawImage(healthBonusImg, gameObject.getX(bonuses[i]), gameObject.getY(bonuses[i]));
+        else ctx.drawImage(bulletBonusImg, gameObject.getX(bonuses[i]), gameObject.getY(bonuses[i]));
     }
 
     // Отрисовываем пули
     ctx.fillStyle = '#80DAEB';
+    ctx.strokeStyle = '#80DAEB';
     for (let i = 0; i < bullets.length; i++) {
-        ctx.fillRect(gameObject.getX(bullets[i]), gameObject.getY(bullets[i]), gameObject.getWidth(bullets[i]), gameObject.getHeight(bullets[i]));
+        ctx.beginPath();
+        ctx.arc(gameObject.getX(bullets[i]), gameObject.getY(bullets[i]) + 6, player.bulletSize / 2, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
     }
 
     // Отрисовываем астероиды
-    ctx.fillStyle = 'grey';
     for (let i = 0; i < asteroids.length; i++) {
-        ctx.fillRect(gameObject.getX(asteroids[i]), gameObject.getY(asteroids[i]), gameObject.getWidth(asteroids[i]), gameObject.getHeight(asteroids[i]));
+        if (gameObject.getHeight(asteroids[i]) == 30) {
+            ctx.drawImage(smallAsteroidImgs[asteroids[i].numberFrame], gameObject.getX(asteroids[i]), gameObject.getY(asteroids[i]));
+            if (asteroids[i].numberFrame < 15) asteroids[i].numberFrame++;
+            else asteroids[i].numberFrame = 0;
+            
+        } else if (gameObject.getHeight(asteroids[i]) == 50) {
+            ctx.drawImage(mediumAsteroidImgs[asteroids[i].numberFrame], gameObject.getX(asteroids[i]), gameObject.getY(asteroids[i]));
+            if (asteroids[i].numberFrame < 13) asteroids[i].numberFrame++;
+            else asteroids[i].numberFrame = 0;
+        } else {
+            ctx.drawImage(bigAsteroidImgs[asteroids[i].numberFrame], gameObject.getX(asteroids[i]), gameObject.getY(asteroids[i]));
+            if (asteroids[i].numberFrame < 11) asteroids[i].numberFrame++;
+            else asteroids[i].numberFrame = 0;
+        }
     }
+
+    // Отрисовываем эффекты уничтожения астероидов
+    drawEffect(smallAsteroidDestroyImgs, smallAsteroidDestroyEffects);
+    drawEffect(mediumAsteroidDestroyImgs, mediumAsteroidDestroyEffects);
+    drawEffect(bigAsteroidDestroyImgs, bigAsteroidDestroyEffects);
+
+
+    // Отрисовываем эффекты уничтожения пуль
+    drawEffect(bulletDestroyImgs, bulletDestroyEffects);
 
     // ОТРИСОВКА ИГРОВОГО ИНТЕРФЕЙСА
 
@@ -555,6 +660,8 @@ function frameDraw() {
     
         ctx.beginPath();
         ctx.arc(joystickCoordinateX, joystickCoordinateY, 20, 0, 2 * Math.PI);
+        ctx.fillStyle = 'white';
+        ctx.fill();
         ctx.stroke();
     
         // Красим кнопку стрельбы в красный если игрок стреляет
@@ -585,7 +692,7 @@ function initialValues() {
     playerSpeed = playerSpeedDefault;                          // Скорость игрока
 
     // Объект игрока
-    player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, null, playerSpeed);
+    player = new gameObject(1280/2 - playerWidth/2, 720/2 - playerHeight/2, playerWidth, playerHeight, playerSpeed);
 
     player.maxHealth = playerMaxHealthDefault;                  // Максимальное здоровье игрока
     player.health = player.maxHealth;                           // Текущее здоровье игрока
@@ -623,6 +730,16 @@ function initialValues() {
 
     minSpeedAsteroid = startMinSpeedAsteroid;                   // Текущая минимальная и максимальная скорость астероидов
     maxSpeedAsteroid = startMaxSpeedAsteroid;
+
+    // Эффекты и положение картинки фона
+    numberPlayerImg = 0;
+    framesPlayerImg = 0;
+    backgroundY1 = 0;
+    backgroundY2 = -720;
+    bulletDestroyEffects = [];
+    smallAsteroidDestroyEffects = [];
+    mediumAsteroidDestroyEffects = [];
+    bigAsteroidDestroyEffects = [];
 }
 
 // Процедура записывающая значения игровых переменных в localStorage (Сохранение игры)
@@ -654,6 +771,16 @@ function saveProgress() {
 
     localStorage.setItem("minSpeedAsteroid", minSpeedAsteroid.toString());
     localStorage.setItem("maxSpeedAsteroid", maxSpeedAsteroid.toString());
+
+    // Эффекты и положение картинки фона
+    localStorage.setItem("numberPlayerImg", numberPlayerImg.toString());
+    localStorage.setItem("framesPlayerImg", framesPlayerImg.toString());
+    localStorage.setItem("backgroundY1", backgroundY1.toString());
+    localStorage.setItem("backgroundY2", backgroundY2.toString());
+    localStorage.setItem("bulletDestroyEffects", JSON.stringify(bulletDestroyEffects));
+    localStorage.setItem("smallAsteroidDestroyEffects", JSON.stringify(smallAsteroidDestroyEffects));
+    localStorage.setItem("mediumAsteroidDestroyEffects", JSON.stringify(mediumAsteroidDestroyEffects));
+    localStorage.setItem("bigAsteroidDestroyEffects", JSON.stringify(bigAsteroidDestroyEffects));
 }
 
 // Процедура считывающая значения игровых переменных из localStorage (Загрузка игры)
@@ -685,6 +812,16 @@ function loadProgress() {
 
     minSpeedAsteroid = Number.parseInt(localStorage.getItem("minSpeedAsteroid"));
     maxSpeedAsteroid = Number.parseInt(localStorage.getItem("maxSpeedAsteroid"));
+
+    // Эффекты и положение картинки фона
+    numberPlayerImg = Number.parseInt(localStorage.getItem("numberPlayerImg"));
+    framesPlayerImg = Number.parseInt(localStorage.getItem("framesPlayerImg"));
+    backgroundY1 = Number.parseInt(localStorage.getItem("backgroundY1"));
+    backgroundY2 = Number.parseInt(localStorage.getItem("backgroundY2"));
+    bulletDestroyEffects = JSON.parse(localStorage.getItem("bulletDestroyEffects"));
+    smallAsteroidDestroyEffects = JSON.parse(localStorage.getItem("smallAsteroidDestroyEffects"));
+    mediumAsteroidDestroyEffects = JSON.parse(localStorage.getItem("mediumAsteroidDestroyEffects"));
+    bigAsteroidDestroyEffects = JSON.parse(localStorage.getItem("bigAsteroidDestroyEffects"));
 }
 
 // Процедура блокирующая кнопку "продолжить" если нет сохранений, и делающая её доступной если сохранения есть
@@ -924,7 +1061,7 @@ function oneFrameGameCycle() {
 
         // Игрок стреляет если произошла перезарядка и зажата левая кнопка мыши и есть пули в боезапасе
         if (player.reload == 0 && player.isShooting && player.ammunition > 0) {
-            bullets.push(new gameObject(gameObject.getX(player) + gameObject.getWidth(player) / 2 - player.bulletSize / 2, gameObject.getY(player) - player.bulletSize, player.bulletSize, player.bulletSize, null, player.bulletSpeed, [0, -1]));
+            bullets.push(new gameObject(gameObject.getX(player) + gameObject.getWidth(player) / 2, gameObject.getY(player) - player.bulletSize / 2, player.bulletSize, player.bulletSize, player.bulletSpeed, [0, -1]));
             bullets[bullets.length - 1].destroy = false;     // Уничтожается ли пуля (при попадании в астероид и вылет за границы экрана)
             player.reload = player.RELOAD;
             player.ammunition--;
@@ -980,8 +1117,9 @@ function oneFrameGameCycle() {
             // Направляющий вектор астероида
             directionVectorAsteroid = [RandN(-1, 1, false), 1];
 
-            asteroids.push(new gameObject(startX, -100, sizeAsteroid, sizeAsteroid, null, speedAsteroid, directionVectorAsteroid));
+            asteroids.push(new gameObject(startX, -100, sizeAsteroid, sizeAsteroid, speedAsteroid, directionVectorAsteroid));
             asteroids[asteroids.length - 1].strength = strengthAsteroid;
+            asteroids[asteroids.length - 1].numberFrame = 0;
         }
 
         // Двигаем все астероиды и уничтожаем их если они улетели вниз
@@ -1016,6 +1154,8 @@ function oneFrameGameCycle() {
 
             // Столкновение астероида с игроком (астероид уничтожается, игрок теряет очко здоровья)
             if (gameObject.linkRectIntersection(player, asteroids[i])) {
+                numberPlayerImg = 1;
+                framesPlayerImg = 3;
                 player.health--;
                 asteroids[i].strength = 0;
             }
@@ -1024,6 +1164,7 @@ function oneFrameGameCycle() {
         // Уничтожение пули (удаление её из массива пуль)
         for (let i = 0; i < bullets.length; i++) {
             if (bullets[i].destroy) {
+                bulletDestroyEffects.push([gameObject.getX(bullets[i]) - 25 + player.bulletSize / 2, gameObject.getY(bullets[i]) - 25 + player.bulletSize / 2, 0]);
                 bullets.splice(i, 1);
                 i--;
             }
@@ -1032,6 +1173,13 @@ function oneFrameGameCycle() {
         // Уничтожение астероида (удаление его из массива астероидов)
         for (let i = 0; i < asteroids.length; i++) {
             if (asteroids[i].strength <= 0) {
+                if (gameObject.getHeight(asteroids[i]) == 30) {
+                    smallAsteroidDestroyEffects.push([gameObject.getX(asteroids[i]) - 25 + gameObject.getHeight(asteroids[i]) / 2, gameObject.getY(asteroids[i]) - 25 + gameObject.getHeight(asteroids[i]) / 2, 0]);
+                } else if (gameObject.getHeight(asteroids[i]) == 50) {
+                    mediumAsteroidDestroyEffects.push([gameObject.getX(asteroids[i]) - 40 + gameObject.getHeight(asteroids[i]) / 2, gameObject.getY(asteroids[i]) - 40 + gameObject.getHeight(asteroids[i]) / 2, 0]);
+                } else {
+                    bigAsteroidDestroyEffects.push([gameObject.getX(asteroids[i]) - 60 + gameObject.getHeight(asteroids[i]) / 2, gameObject.getY(asteroids[i]) - 60 + gameObject.getHeight(asteroids[i]) / 2, 0]);
+                }
                 asteroids.splice(i, 1);
                 i--;
             }
@@ -1055,10 +1203,15 @@ function oneFrameGameCycle() {
             let bonusX = RandN(100, 1100, true);
             let bonusType = RandN(0, 2, true);
 
-            bonuses.push(new gameObject(bonusX, -100, 50, 50, null, 6, [0, 1]));
+            bonuses.push(new gameObject(bonusX, -100, 50, 50, 6, [0, 1]));
             bonuses[bonuses.length - 1].destroy = false;                         // Уничтожить ли бонус (при подбирании игроком или вылете за пределы экрана)
-            if (bonusType == 0) bonuses[bonuses.length - 1].type = 'health';     // Тип бонуса (восстанавливает здоровье или боезапас)
-            else bonuses[bonuses.length - 1].type = 'ammunition';
+            // Тип бонуса (восстанавливает здоровье или боезапас)
+            if (bonusType == 0) {
+                bonuses[bonuses.length - 1].type = 'health';
+            }
+            else {
+                bonuses[bonuses.length - 1].type = 'ammunition';
+            }
         }
 
         // Двигаем бонусы и уничтожаем их при вылете за пределы экрана
@@ -1070,8 +1223,15 @@ function oneFrameGameCycle() {
         // Отслеживаем столкновения бонусов с игроком
         for (let i = 0; i < bonuses.length; i++) {
             if (gameObject.linkRectIntersection(player, bonuses[i])) {
-                if (bonuses[i].type == 'health') player.health = player.maxHealth;   // В зависимости от типа бонуса восстанавливаем игроку здоровье или боезапас
-                else player.ammunition = player.ammunitionSize;
+                framesPlayerImg = 3;
+                if (bonuses[i].type == 'health') {
+                    numberPlayerImg = 2;
+                    player.health = player.maxHealth;   // В зависимости от типа бонуса восстанавливаем игроку здоровье или боезапас
+                }
+                else {
+                    numberPlayerImg = 3;
+                    player.ammunition = player.ammunitionSize;
+                }
                 bonuses[i].destroy = true;
             }
         }
