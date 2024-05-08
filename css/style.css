@@ -12,7 +12,7 @@ body {
     height: 100%;
     margin: auto;
     overflow-x:hidden;
-    background-color: dimgrey;
+    background-color: black;
 }
 
 .game-tab {
@@ -43,6 +43,7 @@ h1, h2, button {
 
 .element-div, .button, .title {
     font-family: "Robotesqa4F";
+    color: white;
 }
 
 .element-div {
@@ -53,20 +54,48 @@ h1, h2, button {
 
 #rating-table {
     width: 90vw;
-    border: 3px solid #dddddd;
+    border: 3px solid blue;
+    color: white;
 }
 
 .button {
     border-radius: 10%;
+    background: linear-gradient(blue, rgb(130, 129, 142));
+    transition: .2s;
+    opacity: 0.7;
+}
+
+.button:hover{
+    opacity: 1;
+}
+
+button:disabled, button:disabled:hover {
+    opacity: 0.3;
+}
+
+.button:focus {
+    background: blue;
 }
 
 .button, input {
     margin: 0 5%;
 }
 
+input {
+    background: linear-gradient(blue, rgb(130, 129, 142));
+    color: white;
+}
+
 select {
     margin-left: 1%;
     margin-right: 5%;
+    background: linear-gradient(blue, rgb(130, 129, 142));
+    color: white;
+    font-family: "Robotesqa4F";
+}
+
+select option {
+    background: blue;
 }
 
 #game-result {

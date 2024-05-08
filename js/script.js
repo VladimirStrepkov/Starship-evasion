@@ -513,6 +513,8 @@ let bigAsteroidDestroyImgs = [];
 getAnimationFrames(bigAsteroidDestroyImgs, 7, "img/bigAsteroidDestroy");
 let bigAsteroidDestroyEffects = [];
 
+let stripDemotionHealth = 100;
+
 // Процедура для отрисовки эффекта
 function drawEffect(arrayImgs, arrayEffects) {
     for (let i = 0; i < arrayEffects.length; i++) {
@@ -598,26 +600,31 @@ function frameDraw() {
 
     // отрисовка шкалы здоровья игрока
     let remaminingHealth; // Отношение текущего здоровья игрока к максимальному
-    if (player.health > 0) remaminingHealth = player.health / player.maxHealth;
+    if (player.health > 0) remaminingHealth = Math.floor(player.health / player.maxHealth * 100);
     else remaminingHealth = 0;
+
+    if (stripDemotionHealth > remaminingHealth) stripDemotionHealth--;
+    else stripDemotionHealth = remaminingHealth;
     
     ctx.fillStyle = '#480607';
-    ctx.fillRect(30, 30, 60, 20);
+    ctx.fillRect(30, 30, 100, 20);
+    ctx.fillStyle = 'yellow';
+    ctx.fillRect(30, 30, stripDemotionHealth, 20);
     ctx.fillStyle = 'red';
-    ctx.fillRect(30, 30, Math.floor(remaminingHealth * 60), 20);
+    ctx.fillRect(30, 30, remaminingHealth, 20);
 
     // отрисовка шкалы боезапаса игрока
-    let remainingAmmunition = player.ammunition / player.ammunitionSize;; // Отношение текущего боезапаса к максимальному
+    let remainingAmmunition = Math.floor(player.ammunition / player.ammunitionSize * 100); // Отношение текущего боезапаса к максимальному
 
     ctx.fillStyle = "#1E90FF";
-    ctx.fillRect(120, 30, 60, 20);
+    ctx.fillRect(160, 30, 100, 20);
     ctx.fillStyle = "#80DAEB";
-    ctx.fillRect(120, 30, Math.floor(remainingAmmunition * 60), 20);
+    ctx.fillRect(160, 30, remainingAmmunition, 20);
 
     // отрисовка таймера
     ctx.fillStyle = '#00FF00';
     ctx.font = "36px serif";
-    ctx.fillText(`${minutes}:${seconds}`, 210, 50);
+    ctx.fillText(`${minutes}:${seconds}`, 300, 50);
 
     // отрисовка кнопки паузы
     ctx.strokeStyle = 'white';
